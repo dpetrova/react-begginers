@@ -5,6 +5,7 @@
     <title>React [RU] Tutorial v2</title>
     <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/prop-types@15.6/prop-types.js"></script>
 
     <!-- Не используйте это в production -->
     <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
@@ -78,6 +79,13 @@
         }
       }
 
+      Article.propTypes = {
+        data: PropTypes.shape({
+          author: PropTypes.string.isRequired,
+          text: PropTypes.string.isRequired
+        })
+      };
+
       class News extends React.Component {
         renderNews = () => {
           const { data } = this.props;
@@ -105,6 +113,10 @@
           );
         }
       }
+
+      News.propTypes = {
+        data: PropTypes.array.isRequired // PropTypes (с большой буквы) = библиотека prop-types
+      };
 
       const Comments = () => {
         return <p>Нет comments...</p>;
