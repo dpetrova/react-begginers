@@ -142,19 +142,14 @@
 
       Article.propTypes = {
         data: PropTypes.shape({
+          id: PropTypes.number.isRequired,
           author: PropTypes.string.isRequired,
           text: PropTypes.string.isRequired,
-          bigText: PropTypes.string.isRequired
+          bigText: PropTypes.string
         })
       };
 
       class News extends React.Component {
-        state = {
-          counter: 0
-        };
-        handleCounter = () => {
-          this.setState({ counter: ++this.state.counter });
-        };
         renderNews = () => {
           const { data } = this.props;
           let newsTemplate = null;
@@ -169,16 +164,14 @@
         };
         render() {
           const { data } = this.props;
-          const { counter } = this.state;
           return (
             <div className="news">
               {this.renderNews()}
               {data.length ? (
-                <strong onClick={this.handleCounter} className={"news__count"}>
+                <strong className={"news__count"}>
                   Всего новостей: {data.length}
                 </strong>
               ) : null}
-              <p>Всего кликов: {counter}</p>
             </div>
           );
         }
@@ -250,12 +243,18 @@
         state = {
           name: "",
           text: "",
+          bigText: "",
           agree: false
         };
         onBtnClickHandler = e => {
           e.preventDefault();
-          const { name, text } = this.state;
-          alert(name + "\n" + text);
+          const { name, text, bigText } = this.state;
+          this.props.onAddNews({
+            id: +new Date(), // в id сохраняется количество миллисекунд прошедших с 1 января 1970 года в часовом поясе UTC
+            author: name, // name сохраняем в поле author
+            text,
+            bigText
+          });
         };
         handleChange = e => {
           const { id, value } = e.currentTarget;
@@ -280,7 +279,7 @@
           return false;
         };
         render() {
-          const { name, text, agree } = this.state; // вытащили значения из стейта
+          const { name, text, bigText, agree } = this.state; // вытащили значения из стейта
           return (
             <form className="add">
               <input
@@ -300,6 +299,13 @@
                 placeholder="Текст новости"
                 value={text}
               />
+              <textarea
+                id="bigText"
+                onChange={this.handleChange}
+                className="add__text"
+                placeholder="Текст новости подробно"
+                value={bigText}
+              />
               <label className="add__checkrule">
                 <input type="checkbox" onChange={this.handleCheckboxChange} /> Я
                 согласен с правилами
@@ -309,24 +315,52 @@
                 onClick={this.onBtnClickHandler}
                 disabled={!this.validate()}
               >
-                Показать alert
+                Add news
               </button>
             </form>
           );
         }
       }
 
-      const App = () => {
-        return (
-          <React.Fragment>
-            <h3>Новости</h3>
-            {/*<TestInput /> */}
-            <Add />
-            <News data={myNews} /> {/* добавили свойство data */}
-            <Comments />
-          </React.Fragment>
-        );
+      Add.propTypes = {
+        onAddNews: PropTypes.func.isRequired // func используется для проверки передачи function
       };
+
+      //   const App = () => {
+      //     return (
+      //       <React.Fragment>
+      //         <h3>Новости</h3>
+      //         {/*<TestInput /> */}
+      //         <Add />
+      //         <News data={myNews} /> {/* добавили свойство data */}
+      //         <Comments />
+      //       </React.Fragment>
+      //     );
+      //   };
+
+      class App extends React.Component {
+        state = {
+          news: myNews // в начальное состояние положили значение из переменной
+        };
+        handleAddNews = data => {
+          // сначала мы формируем массив, на основе всего того, что уже было в новостях
+          // и кладем это все в новый массив + новую новость кладем в начало массива
+          const nextNews = [data, ...this.state.news];
+          // затем обновляем новый массив новостей в this.state.news
+          this.setState({ news: nextNews });
+        };
+        render() {
+          return (
+            <React.Fragment>
+              <Add onAddNews={this.handleAddNews} />
+              <h3>Новости</h3>
+              {/* считали новости из this.state */}
+              <News data={this.state.news} />
+            </React.Fragment>
+          );
+        }
+      }
+
       ReactDOM.render(<App />, document.getElementById("root"));
     </script>
   </body>
